@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.14...3.19 FATAL_ERROR)
 
 set(PROJECT_NAME "xpeccy")
 project(${PROJECT_NAME})
@@ -16,10 +16,20 @@ include(${CMAKE_ROOT}/Modules/FindPackageHandleStandardArgs.cmake)
 include (TestBigEndian)
 test_big_endian(BIG_ENDIAN)
 if (BIG_ENDIAN)
-	add_definitions(-DWORDS_BIG_ENDIAN)
+        add_definitions(-DWORDS_BIG_ENDIAN)
 else()
-	add_definitions(-DWORDS_LITTLE_ENDIAN)
+        add_definitions(-DWORDS_LITTLE_ENDIAN)
 endif()
+
+# Allow multi core usage
+set(CMAKE_BUILD_PARALLEL_LEVEL)
+
+
+# This makes C++11 a requirement and prevents a "decay" to C++98 when the compiler
+# does not support C++11.
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # compilation flags
 
@@ -42,94 +52,94 @@ set(CPACK_PACKAGE_CONTACT "samstyle@list.ru")
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-	set(INC_PATHS local/include include)
-	set(LIB_PATHS lib lib64 local/lib local/lib64)
+        set(INC_PATHS local/include include)
+        set(LIB_PATHS lib lib64 local/lib local/lib64)
 
 
-	if ("${PACK}" STREQUAL "rpm")
+        if ("${PACK}" STREQUAL "rpm")
 
-	# RPM package
+        # RPM package
 
-	message(STATUS "Package type : RPM")
-	set(CPACK_GENERATOR "RPM")
-	set(CPACK_RPM_PACKAGE_LICENSE "MIT")
-	set(CPACK_RPM_PACKAGE_GROUP "Games")
+        message(STATUS "Package type : RPM")
+        set(CPACK_GENERATOR "RPM")
+        set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+        set(CPACK_RPM_PACKAGE_GROUP "Games")
 
-	else ()
+        else ()
 
-	# DEB package
+        # DEB package
 
-	message(STATUS "Package type : DEB")
-	set(CPACK_GENERATOR "DEB")
-	set(CPACK_DEBIAN_PACKAGE_SECTION "Games")
-	set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+        message(STATUS "Package type : DEB")
+        set(CPACK_GENERATOR "DEB")
+        set(CPACK_DEBIAN_PACKAGE_SECTION "Games")
+        set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 
-	endif()
+        endif()
 
-	install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME} DESTINATION bin
-		PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE WORLD_READ WORLD_EXECUTE GROUP_READ GROUP_EXECUTE
-	)
-	install(FILES images/xpeccy.png DESTINATION share/icons)
-	install(FILES Xpeccy.desktop DESTINATION share/applications)
+        install(FILES ${CMAKE_BINARY_DIR}/${PROJECT_NAME} DESTINATION bin
+                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE WORLD_READ WORLD_EXECUTE GROUP_READ GROUP_EXECUTE
+        )
+        install(FILES images/xpeccy.png DESTINATION share/icons)
+        install(FILES Xpeccy.desktop DESTINATION share/applications)
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-	set(INC_PATHS local/include include)
-	set(LIB_PATHS lib lib64 local/lib local/lib64)
+        set(INC_PATHS local/include include)
+        set(LIB_PATHS lib lib64 local/lib local/lib64)
 
-	set(CPACK_GENERATOR "DragNDrop")
-	set(CPACK_DMG_NAME ${PROJECT_NAME})
-	set(CPACK_DMG_FORMAT UDZO)
+        set(CPACK_GENERATOR "DragNDrop")
+        set(CPACK_DMG_NAME ${PROJECT_NAME})
+        set(CPACK_DMG_FORMAT UDZO)
 #	set(CPACK_DMG_BACKGROUND_IMAGE ${CMAKE_SOURCE_DIR}/background.png)
 
-	set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}.app)
-	set(MACOSX_BUNDLE_ICON_FILE ${PROJECT_NAME}.icns)
-	set(MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist)
-	set(MACOSX_BUNDLE_BUNDLE_VERSION ${XVER})
+        set(MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}.app)
+        set(MACOSX_BUNDLE_ICON_FILE ${PROJECT_NAME}.icns)
+        set(MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist)
+        set(MACOSX_BUNDLE_BUNDLE_VERSION ${XVER})
 
-	set(BUNDLE_ICON_PATH ${CMAKE_SOURCE_DIR}/images/${MACOSX_BUNDLE_ICON_FILE})
-	set(BUNDLE_PATH ${CMAKE_BINARY_DIR}/${MACOSX_BUNDLE_BUNDLE_NAME})
+        set(BUNDLE_ICON_PATH ${CMAKE_SOURCE_DIR}/images/${MACOSX_BUNDLE_ICON_FILE})
+        set(BUNDLE_PATH ${CMAKE_BINARY_DIR}/${MACOSX_BUNDLE_BUNDLE_NAME})
 
-	set_source_files_properties(${CMAKE_BINARY_DIR}/${PROJECT_NAME} PROPERTIES MACOSX_PACKAGE_LOCATION MacOSX)
-	set_source_files_properties(${BUNDLE_ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+        set_source_files_properties(${CMAKE_BINARY_DIR}/${PROJECT_NAME} PROPERTIES MACOSX_PACKAGE_LOCATION MacOSX)
+        set_source_files_properties(${BUNDLE_ICON_PATH} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-	set(CPACK_GENERATOR "ZIP")
-	set(LIBRARIES ${LIBRARIES} winmm.dll)
-	set(INC_PATHS $ENV{INCLUDE} $ENV{PATH})
-	set(LIB_PATHS $ENV{LIBPATH} $ENV{PATH})
+        set(CPACK_GENERATOR "ZIP")
+        set(LIBRARIES ${LIBRARIES} winmm.dll)
+        set(INC_PATHS $ENV{INCLUDE} $ENV{PATH})
+        set(LIB_PATHS $ENV{LIBPATH} $ENV{PATH})
 
 else()
 
-	message(ERROR "Unsupported system : ${CMAKE_SYSTEM_NAME}")
+        message(ERROR "Unsupported system : ${CMAKE_SYSTEM_NAME}")
 
 endif()
 
 set(INCLUDIRS
-	${CMAKE_BINARY_DIR}
-	./src
-	./src/xcore
-	./src/xgui
-	./src/xgui/debuga
-	./src/xgui/options
-	./src/libxpeccy
-	./src/libxpeccy/cpu
-	./src/libxpeccy/hardware
-	./src/libxpeccy/sound
-	./src/libxpeccy/video
-	./src/libxpeccy/filetypes
-	)
+        ${CMAKE_BINARY_DIR}
+        ./src
+        ./src/xcore
+        ./src/xgui
+        ./src/xgui/debuga
+        ./src/xgui/options
+        ./src/libxpeccy
+        ./src/libxpeccy/cpu
+        ./src/libxpeccy/hardware
+        ./src/libxpeccy/sound
+        ./src/libxpeccy/video
+        ./src/libxpeccy/filetypes
+        )
 
 # sources
 file(GLOB_RECURSE SOURCES
-	./src/*.cpp
-	./src/*.c
+        ./src/*.cpp
+        ./src/*.c
 )
 
 # headers
 file(GLOB_RECURSE HEADERS
-	./src/*.h
+        ./src/*.h
 )
 
 # Qt user interface
@@ -140,142 +150,144 @@ set(QRCFILES ./xpeccy.qrc)
 
 # Qt moc files
 set(MOCFILES
-	./src/ethread.h
-	./src/emulwin.h
-	./src/xapp.h
-	./src/xgui/debuga/debuger.h
-	./src/xgui/debuga/dbg_sprscan.h
-	./src/xgui/debuga/dbg_memfill.h
-	./src/xgui/debuga/dbg_finder.h
-	./src/xgui/debuga/dbg_dump.h
-	./src/xgui/debuga/dbg_disasm.h
-	./src/xgui/debuga/dbg_brkpoints.h
-	./src/xgui/debuga/dbg_diskdump.h
-	./src/watcher.h
-	./src/xgui/options/setupwin.h
-	./src/xgui/options/padbinder.h
-	./src/xgui/options/opt_romset.h
-	./src/xgui/options/opt_diskcat.h
-	./src/xgui/options/opt_tapecat.h
-	./src/xgui/options/opt_hotkeytab.h
-	./src/vkeyboard.h
-	./src/xgui/xgui.h
-	./src/xgui/labelist.h
+        ./src/ethread.h
+        ./src/emulwin.h
+        ./src/xapp.h
+        ./src/xgui/debuga/debuger.h
+        ./src/xgui/debuga/dbg_sprscan.h
+        ./src/xgui/debuga/dbg_memfill.h
+        ./src/xgui/debuga/dbg_finder.h
+        ./src/xgui/debuga/dbg_dump.h
+        ./src/xgui/debuga/dbg_disasm.h
+        ./src/xgui/debuga/dbg_brkpoints.h
+        ./src/xgui/debuga/dbg_diskdump.h
+        ./src/watcher.h
+        ./src/xgui/options/setupwin.h
+        ./src/xgui/options/padbinder.h
+        ./src/xgui/options/opt_romset.h
+        ./src/xgui/options/opt_diskcat.h
+        ./src/xgui/options/opt_tapecat.h
+        ./src/xgui/options/opt_hotkeytab.h
+        ./src/vkeyboard.h
+        ./src/xgui/xgui.h
+        ./src/xgui/labelist.h
 )
 
 # Qt4 / Qt5
 
 if(${QT4BUILD})
 
-	find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-	include(${QT_USE_FILE})
-	qt4_add_resources(RESOURCES ${QRCFILES})
-	qt4_wrap_ui(UIHEADERS ${UIFILES})
-	qt4_wrap_cpp(MOCHEADERS ${MOCFILES})
-	set(CPACK_RPM_PACKAGE_REQUIRES "libqt4 >= 4.6, libqt4-x11 >= 4.6")
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqtcore4 (>=4.6), libqtgui4 (>=4.6)")
+        find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+        include(${QT_USE_FILE})
+        qt4_add_resources(RESOURCES ${QRCFILES})
+        qt4_wrap_ui(UIHEADERS ${UIFILES})
+        qt4_wrap_cpp(MOCHEADERS ${MOCFILES})
+        set(CPACK_RPM_PACKAGE_REQUIRES "libqt4 >= 4.6, libqt4-x11 >= 4.6")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqtcore4 (>=4.6), libqtgui4 (>=4.6)")
 
-	if(${USEQTNETWORK})
-		find_package(Qt4 COMPONENTS QtNetwork REQUIRED)
-		set(CPACK_RPM_PACKAGE_REQUIRES ${CPACK_RPM_PACKAGE} "libqt4-network >= 4.6")
-		set(CPACK_DEBIAN_PACKAGE_DEPENDS ${CPACK_DEBIAN_PACKAGE_DEPENDS} "libqt4-network (>=4.6)")
-		add_definitions("-DUSENETWORK")
-	endif()
-	if(${USEOPENGL})
-		find_package(Qt4 COMPONENTS QtOpenGL REQUIRED)
-		set(CPACK_RPM_PACKAGE_REQUIRES ${CPACK_RPM_PACKAGE} "libqt4-opengl >= 4.6")
-		set(CPACK_DEBIAN_PACKAGE_DEPENDS ${CPACK_DEBIAN_PACKAGE_DEPENDS} "libqt4-opengl (>=4.6)")
-		add_definitions("-DUSEOPENGL")
-	endif()
+        if(${USEQTNETWORK})
+                find_package(Qt4 COMPONENTS QtNetwork REQUIRED)
+                set(CPACK_RPM_PACKAGE_REQUIRES ${CPACK_RPM_PACKAGE} "libqt4-network >= 4.6")
+                set(CPACK_DEBIAN_PACKAGE_DEPENDS ${CPACK_DEBIAN_PACKAGE_DEPENDS} "libqt4-network (>=4.6)")
+                add_definitions("-DUSENETWORK")
+        endif()
+        if(${USEOPENGL})
+                find_package(Qt4 COMPONENTS QtOpenGL REQUIRED)
+                set(CPACK_RPM_PACKAGE_REQUIRES ${CPACK_RPM_PACKAGE} "libqt4-opengl >= 4.6")
+                set(CPACK_DEBIAN_PACKAGE_DEPENDS ${CPACK_DEBIAN_PACKAGE_DEPENDS} "libqt4-opengl (>=4.6)")
+                add_definitions("-DUSEOPENGL")
+        endif()
 
-	set(LIBRARIES ${LIBRARIES} ${QT_LIBRARIES})
-	set(QT_VER ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH})
+        set(LIBRARIES ${LIBRARIES} ${QT_LIBRARIES})
+        set(QT_VER ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR}.${QT_VERSION_PATCH})
 
 else(${QT4BUILD})
+        #Disable use of C++ API deprecated in Qt 5.15
+        # https://embeddeduse.com/2021/01/17/migrating-a-harvester-hmi-from-qt-5-12-to-qt-6-0/
+        #add_compile_definitions(QT_DISABLE_DEPRECATED_BEFORE=0x050F00)
+        find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
+        set(LIBRARIES ${LIBRARIES} Qt5::Widgets)
+        qt5_add_resources(RESOURCES ${QRCFILES})
+        qt5_wrap_ui(UIHEADERS ${UIFILES})
+        qt5_wrap_cpp(MOCHEADERS ${MOCFILES})
+        set(CPACK_RPM_PACKAGE_REQUIRES "libQt5Gui5 >= 5.3, libQt5Widgets5 >= 5.3")
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5gui5 (>=5.3), libqt5widgets5 (>=5.3)")
 
-	find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
-	set(LIBRARIES ${LIBRARIES} Qt5::Widgets)
-	qt5_add_resources(RESOURCES ${QRCFILES})
-	qt5_wrap_ui(UIHEADERS ${UIFILES})
-	qt5_wrap_cpp(MOCHEADERS ${MOCFILES})
-	set(CPACK_RPM_PACKAGE_REQUIRES "libQt5Gui5 >= 5.3, libQt5Widgets5 >= 5.3")
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5gui5 (>=5.3), libqt5widgets5 (>=5.3)")
+        if(${USEQTNETWORK})
+                find_package(Qt5 COMPONENTS Network REQUIRED)
+                set(LIBRARIES ${LIBRARIES} Qt5::Network)
+                set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libqt5network5 (>=5.3)")
+                set(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE}, libQt5Network5 >= 5.3")
+                add_definitions("-DUSENETWORK")
+        endif()
+        if (${USEOPENGL})
+                find_package(OpenGL REQUIRED)
+                find_package(Qt5 COMPONENTS OpenGL REQUIRED)
+                set(LIBRARIES ${LIBRARIES} Qt5::OpenGL ${OPENGL_LIBRARIES})
+                set(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE}, libQt5OpenGL5 >= 5.3")
+                set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libqt5opengl5 (>=5.3)")
+                add_definitions("-DUSEOPENGL")
+        endif()
 
-	if(${USEQTNETWORK})
-		find_package(Qt5 COMPONENTS Network REQUIRED)
-		set(LIBRARIES ${LIBRARIES} Qt5::Network)
-		set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libqt5network5 (>=5.3)")
-		set(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE}, libQt5Network5 >= 5.3")
-		add_definitions("-DUSENETWORK")
-	endif()
-	if (${USEOPENGL})
-		find_package(OpenGL REQUIRED)
-		find_package(Qt5 COMPONENTS OpenGL REQUIRED)
-		set(LIBRARIES ${LIBRARIES} Qt5::OpenGL ${OPENGL_LIBRARIES})
-		set(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE}, libQt5OpenGL5 >= 5.3")
-		set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libqt5opengl5 (>=5.3)")
-		add_definitions("-DUSEOPENGL")
-	endif()
-
-	set(QT_VER ${Qt5Widgets_VERSION})
+        set(QT_VER ${Qt5Widgets_VERSION})
 
 endif(${QT4BUILD})
 
 # SDL
 
 if(${SDL1BUILD})
-	find_package(SDL REQUIRED)
-	if(${SDL_FOUND})
-		add_definitions(-DHAVESDL1)
-		include_directories(${SDL_INCLUDE_DIR})
-		set(LIBRARIES ${LIBRARIES} ${SDL_LIBRARY})
-		set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libSDL1.2debian (>=1.2)")
-		set(CPACK_RPM_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}, SDL >= 1.2")
-		set(SDL_VER ${SDL_VERSION_STRING})
-		set(SDL_NAME "SDL")
-	endif(${SDL_FOUND})
+        find_package(SDL REQUIRED)
+        if(${SDL_FOUND})
+                add_definitions(-DHAVESDL1)
+                include_directories(${SDL_INCLUDE_DIR})
+                set(LIBRARIES ${LIBRARIES} ${SDL_LIBRARY})
+                set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libSDL1.2debian (>=1.2)")
+                set(CPACK_RPM_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}, SDL >= 1.2")
+                set(SDL_VER ${SDL_VERSION_STRING})
+                set(SDL_NAME "SDL")
+        endif(${SDL_FOUND})
 else(${SDL1BUILD})
-	find_package(SDL2 REQUIRED)
-	if (${SDL2_FOUND})
-		add_definitions(-DHAVESDL2)
-		include_directories(${SDL2_INCLUDE_DIR})
-		set(LIBRARIES ${LIBRARIES} ${SDL2_LIBRARY})
-		set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libsdl2-2.0-0 (>=2.0) | libSDL2 (>=2.0)")
-		set(CPACK_RPM_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}, SDL2 >= 2.0")
-		set(SDL_VER "2.x")
-		set(SDL_NAME "SDL2")
-		message(STATUS "SDL2_INCLUDE_DIR = " ${SDL2_INCLUDE_DIR})
-	endif(${SDL2_FOUND})
+        find_package(SDL2 REQUIRED)
+        if (${SDL2_FOUND})
+                add_definitions(-DHAVESDL2)
+                include_directories(${SDL2_INCLUDE_DIR})
+                set(LIBRARIES ${LIBRARIES} ${SDL2_LIBRARY})
+                set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libsdl2-2.0-0 (>=2.0) | libSDL2 (>=2.0)")
+                set(CPACK_RPM_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}, SDL2 >= 2.0")
+                set(SDL_VER "2.x")
+                set(SDL_NAME "SDL2")
+                message(STATUS "SDL2_INCLUDE_DIR = " ${SDL2_INCLUDE_DIR})
+        endif(${SDL2_FOUND})
 endif(${SDL1BUILD})
 
 # zlib (for rzx)
 
 find_package(ZLIB)
 if(ZLIB_FOUND)
-	add_definitions(-DHAVEZLIB)
-	set(INCLUDIRS ${INCLUDIRS} ${ZLIB_INCLUDE_DIR})
-	set(LIBRARIES ${LIBRARIES} ${ZLIB_LIBRARY})
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, zlib1g (>=1.2)")
-	set(CPACK_RPM_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}, zlib >= 1.2")
+        add_definitions(-DHAVEZLIB)
+        set(INCLUDIRS ${INCLUDIRS} ${ZLIB_INCLUDE_DIR})
+        set(LIBRARIES ${LIBRARIES} ${ZLIB_LIBRARY})
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, zlib1g (>=1.2)")
+        set(CPACK_RPM_PACKAGE_DEPENDS "${CPACK_RPM_PACKAGE_DEPENDS}, zlib >= 1.2")
 endif(ZLIB_FOUND)
 
 # other
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-	add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UIHEADERS} ${RESOURCES} ${MOCHEADERS})
+        add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${UIHEADERS} ${RESOURCES} ${MOCHEADERS})
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${UIHEADERS} ${RESOURCES} ${MOCHEADERS} ${BUNDLE_ICON_PATH})
-	find_program(MACDEPLOYQTEXE macdeployqt)
-	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-		COMMAND ${MACDEPLOYQTEXE} ARGS ${BUNDLE_PATH} -always-overwrite
-		COMMAND mkdir ARGS -p ${BUNDLE_PATH}/Contents/Frameworks
-		COMMAND cp ARGS -R /Library/Frameworks/${SDL_NAME}.framework ${BUNDLE_PATH}/Contents/Frameworks
-		COMMAND install_name_tool -change @rpath/${SDL_NAME}.framework/Versions/A/${SDL_NAME} @executable_path/../Frameworks/${SDL_NAME}.framework/Versions/A/${SDL_NAME} ${BUNDLE_PATH}/Contents/MacOS/xpeccy
-	)
-	set(CMAKE_INSTALL_PREFIX "/Applications")
-	install(TARGETS ${PROJECT_NAME} BUNDLE DESTINATION .)
+        add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${UIHEADERS} ${RESOURCES} ${MOCHEADERS} ${BUNDLE_ICON_PATH})
+        find_program(MACDEPLOYQTEXE macdeployqt)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+                COMMAND ${MACDEPLOYQTEXE} ARGS ${BUNDLE_PATH} -always-overwrite
+                COMMAND mkdir ARGS -p ${BUNDLE_PATH}/Contents/Frameworks
+                COMMAND cp ARGS -R /Library/Frameworks/${SDL_NAME}.framework ${BUNDLE_PATH}/Contents/Frameworks
+                COMMAND install_name_tool -change @rpath/${SDL_NAME}.framework/Versions/A/${SDL_NAME} @executable_path/../Frameworks/${SDL_NAME}.framework/Versions/A/${SDL_NAME} ${BUNDLE_PATH}/Contents/MacOS/xpeccy
+        )
+        set(CMAKE_INSTALL_PREFIX "/Applications")
+        install(TARGETS ${PROJECT_NAME} BUNDLE DESTINATION .)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${UIHEADERS} ${RESOURCES} ${MOCHEADERS} ${CMAKE_SOURCE_DIR}/xpeccy.rc)
+        add_executable(${PROJECT_NAME} WIN32 ${SOURCES} ${HEADERS} ${UIHEADERS} ${RESOURCES} ${MOCHEADERS} ${CMAKE_SOURCE_DIR}/xpeccy.rc)
 endif()
 
 include_directories(${INCLUDIRS})
@@ -296,21 +308,21 @@ message(STATUS "Qt version : ${QT_VER}")
 message(STATUS "SDL version : ${SDL_VER}")
 
 if (${USEQTNETWORK})
-	message(STATUS "Network: yes")
+        message(STATUS "Network: yes")
 else()
-	message(STATUS "Network: no")
+        message(STATUS "Network: no")
 endif()
 
 if (${USEOPENGL})
-	message(STATUS "OpenGL: yes")
+        message(STATUS "OpenGL: yes")
 else()
-	message(STATUS "OpenGL: no")
+        message(STATUS "OpenGL: no")
 endif()
 
 if (BIG_ENDIAN)
-	message(STATUS "Endianness: BE")
+        message(STATUS "Endianness: BE")
 else ()
-	message(STATUS "Endianness: LE")
+        message(STATUS "Endianness: LE")
 endif()
 
 message(STATUS "\n")
